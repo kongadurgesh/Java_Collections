@@ -9,7 +9,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class CollectionsDemo {
     public static void main(String[] args) {
@@ -21,6 +24,92 @@ public class CollectionsDemo {
         customObjectsList();
         groupListsByProperty();
         filterAndMapList();
+        mergeMaps();
+        parallelStreamsSum();
+        flatMap();
+        countMapOfStrings();
+    }
+
+    // Collecting into Custom Data Structure
+    // Given a list of strings representing sentences, collect the words from all
+    // sentences into a custom data structure that keeps track of the frequency of
+    // each word.
+    private static void countMapOfStrings() {
+        List<String> sentences = Arrays.asList(
+                "Hello world",
+                "World of Java",
+                "Java is awesome");
+        // sentences.forEach(sentence -> Arrays.asList(sentence.split(" ")));
+        // System.out.println(sentences);
+        List<String> flattedStrings = new ArrayList<>();
+        sentences.forEach(sentence -> {
+            flattedStrings.addAll(Arrays.asList(sentence.split(" ")));
+        });
+        Map<String, Long> countMap = flattedStrings.stream()
+                .collect(Collectors.groupingBy(String::toLowerCase, Collectors.counting()));
+        System.out.println(countMap);
+
+        Map<String, Long> countMap2 = sentences.stream()
+                .flatMap(sentence -> Arrays.stream(sentence.split(" ")))
+                .map(String::toLowerCase)
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+
+        System.out.println(countMap2);
+
+    }
+
+    // FlatMap Operation
+    // Given a list of lists of integers, flatten the lists into a single list of
+    // integers using the flatMap operation.
+    private static void flatMap() {
+        List<List<Integer>> listOfLists = Arrays.asList(
+                Arrays.asList(1, 2, 3),
+                Arrays.asList(4, 5),
+                Arrays.asList(6, 7, 8));
+
+        List<Integer> flatIntegers = listOfLists.stream().flatMap(list -> list.stream()).toList();
+        System.out.println(flatIntegers);
+    }
+
+    // Parallel Stream Processing
+    // Given a large list of integers, calculate the sum of all even numbers using
+    // parallel stream processing.
+    private static void parallelStreamsSum() {
+        List<Integer> numbers = IntStream.rangeClosed(1, 1000000).boxed().collect(Collectors.toList());
+        System.out.println(numbers.parallelStream().collect(Collectors.summingInt(Integer::intValue)));
+        System.out.println(numbers.stream().mapToInt(Integer::intValue).sum());
+    }
+
+    // Given two maps representing the scores of students in two different subjects,
+    // merge the maps such that:
+    // If a student appears in both maps, their scores in both subjects should be
+    // added together.
+    // If a student appears in only one map, their scores in the other subject
+    // should be considered as 0.
+    private static void mergeMaps() {
+        Map<String, Integer> mathScores = new HashMap<>();
+        mathScores.put("Alice", 85);
+        mathScores.put("Bob", 90);
+        mathScores.put("Charlie", 75);
+
+        Map<String, Integer> physicsScores = new HashMap<>();
+        physicsScores.put("Alice", 80);
+        physicsScores.put("David", 88);
+        physicsScores.put("Eva", 95);
+
+        Map<String, Integer> totalScores = new HashMap<>();
+        totalScores.putAll(mathScores);
+        physicsScores.forEach((t, u) -> {
+            if (totalScores.containsKey(t)) {
+                totalScores.put(t, totalScores.get(t) + u);
+            } else {
+                totalScores.put(t, u);
+            }
+        });
+        Map<String, Integer> sumOfScores = Stream.of(mathScores, physicsScores)
+                .flatMap(map -> map.entrySet().stream())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, Integer::sum));
+        System.out.println(sumOfScores);
     }
 
     // Filtering and Mapping

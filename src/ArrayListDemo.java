@@ -2,7 +2,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class ArrayListDemo {
-    public static void main(String[] args) throws Exception {
+    public void main(String[] args) throws Exception {
 
         // Collections using ArrayList
         Collection<Integer> collection = new ArrayList<>();
